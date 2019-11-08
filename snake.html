@@ -1,0 +1,106 @@
+<html>
+    <head>
+
+    </head>
+
+    <body style = "background:#a9a9a9">
+        <canvas width = "800" height = "500" style = "background:#333333; margin:20px auto;">
+
+        </canvas>
+
+        <script>
+            const canvas = document.querySelector("canvas")
+            const context = canvas.getContext("2d")
+            const segments = 
+            [
+                [400, 250],
+                [390, 250],
+                [380, 250]
+            ]
+            const createApple = () => [Math.floor(Math.random()*750+25), Math.floor(Math.random()*450+25)]
+            let apple = createApple()
+
+            const renderSegment = (x, y, color = "#336699") => 
+            {  
+                context.fillStyle = color;
+                context.beginPath()
+                context.moveTo(x, y)
+                context.arc(x, y, 5, 0, 360)
+                context.fill()
+                context.closePath()
+                context.fillStyle = ""
+            }
+
+            for (var segment of segments)
+            {
+                renderSegment(segment[0], segment[1])
+            }
+            renderSegment(apple[0], apple[1], "red")
+            let direction = "right";
+            const checkCollision = (x1, y1, r1, x2, y2, r2) =>
+            {
+                return ((r1+r2) **2 > (x1-x2) **2 + (y1-y2) **2)
+            }
+            const gameLoop = () => 
+            {
+                const head = segments[0].slice()
+                switch (direction) 
+                {
+                    case "right":
+                        head[0] += 10;
+                        break
+                    case "left":
+                        head[0] -= 10;
+                        break
+                    case "up":
+                        head[1] -= 10;
+                        break
+                    case "down":
+                        head[1] += 10;
+                        break
+                }
+                const existing = segments.find(segment => segment[0] === head[0] && segment[1] === head[1])
+                if (existing || head[0] < 0 || head[0] >= canvas.width || head[1] < 0 || head[1] >= canvas.height)
+                {
+                    alert("game over dude..")
+                    return;
+                }
+                segments.unshift(head)
+                if (checkCollision(head[0], head[1], 5, apple[0], apple[1], 5))
+                {
+                    context.beginPath();
+                    context.clearRect(apple[0]-5, apple[1]-5, 10, 10)
+                    apple = createApple()
+                    renderSegment(apple[0], apple[1], "red")
+                }
+                else
+                {
+                    const tail = segments.pop();
+                    context.beginPath()
+                    context.clearRect(tail[0]-5, tail[1]-5, 10, 10)
+                }
+                renderSegment(head[0], head[1])
+                setTimeout(gameLoop, 50)
+            }
+            document.addEventListener("keyup", e => 
+            {
+                switch(e.keyCode)
+                {
+                    case 37:
+                        direction !== "right" && (direction = "left")
+                        break
+                    case 38:
+                        direction !== "down" && (direction = "up")
+                        break
+                    case 39:
+                        direction !== "left" && (direction = "right")
+                        break
+                    case 40:
+                        direction !== "up" && (direction = "down")
+                        break
+                }
+            })
+            gameLoop()
+        </script>
+    </body>
+</html>
